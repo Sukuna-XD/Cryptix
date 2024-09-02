@@ -706,6 +706,23 @@ class Cryptix:
     
         return ''.join(encrypted_text)
 
+    @staticmethod
+       def encrypt_hill_cipher(plaintext, key_matrix):
+         try:
+             key_matrix = np.array(key_matrix)
+             plaintext_vectors = [ord(char.upper()) - ord('A') for char in plaintext if char.isalpha()]
+             ciphertext_vectors = []
+
+            for i in range(0, len(plaintext_vectors), len(key_matrix)):
+                vector = np.array(plaintext_vectors[i:i+len(key_matrix)])
+                encrypted_vector = np.dot(key_matrix, vector) % 26
+                ciphertext_vectors.extend(encrypted_vector.astype(int))
+
+            encrypted_text = ''.join(chr(int(v) + ord('A')) for v in ciphertext_vectors)
+
+            return encrypted_text
+        except Exception as ex:
+            print(EXCEPTION_MESSAGE, ex)
 
 
     
@@ -748,3 +765,28 @@ class Cryptix:
         base32_string.append(padding_chars)
         
         return ''.join(base32_string)
+
+      @staticmethod
+      def encode_char(char, key_char):
+        if not char.isalpha() or not key_char.isalpha():
+           raise ValueError("Both inputs must be alphabetic characters.")
+    
+        alpha_start = 65 if char.isupper() else 97
+        encrypted_ord = (ord(char) + ord(key_char) - 2 * alpha_start) % 26 + alpha_start
+          
+        return chr(encrypted_ord)
+
+      @staticmethod
+      def encode_cipher(plaintext, key):
+        key_cycle = itertools.cycle(key)
+        encrypted_text = ""
+
+        for char in plaintext:
+            if char.isalpha():
+                key_char = next(key_cycle).upper() if char.isupper() else next(key_cycle).lower()
+                encrypted_text += Cryptix.encode_char(char, key_char)
+            else:
+                encrypted_text += char
+
+        return encrypted_text
+          
